@@ -1,10 +1,10 @@
 package savage.chestshops.util;
 
 import net.minecraft.server.level.ServerPlayer;
-import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.minecraft.server.permissions.Permissions;
 
 public class PermissionUtil {
     public static boolean isAdmin(ServerPlayer player) {
-        return Permissions.check(player, "savschestshops.admin", 2);
+        return player.createCommandSourceStack().permissions().hasPermission(Permissions.COMMANDS_ADMIN);
     }
 }

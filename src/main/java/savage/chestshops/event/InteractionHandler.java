@@ -31,8 +31,8 @@ public class InteractionHandler {
                 ChestShop shop = ShopRegistry.getInstance().getShop(chestPos, worldId);
 
                 if (shop != null) {
-                    // Check if player is the owner
-                    if (shop.getOwnerId().equals(serverPlayer.getUUID())) {
+                    // Check if player is the owner (Disallow for regular shops, allow for Admin shops)
+                    if (shop.getOwnerId().equals(serverPlayer.getUUID()) && !shop.isAdmin()) {
                         serverPlayer.sendSystemMessage(Component.literal("§cYou cannot trade with your own shop!"));
                         return InteractionResult.SUCCESS;
                     }

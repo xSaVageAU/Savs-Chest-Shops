@@ -32,7 +32,7 @@ public class InteractionHandler {
 
                 if (shop != null) {
                     // Check if player is the owner
-                    if (shop.getOwnerId().equals(serverPlayer.getUUID()) && !savage.chestshops.util.PermissionUtil.isAdmin(serverPlayer)) {
+                    if (shop.getOwnerId().equals(serverPlayer.getUUID())) {
                         serverPlayer.sendSystemMessage(Component.literal("§cYou cannot trade with your own shop!"));
                         return InteractionResult.SUCCESS;
                     }

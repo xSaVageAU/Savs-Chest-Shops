@@ -24,14 +24,15 @@ public class SavsChestShops implements ModInitializer {
 	public void onInitialize() {
 		LOGGER.info("Initializing Sav's Chest Shops...");
 
-		// Capture Server Instance
-		net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTED.register(s -> server = s);
+		// Capture Server Instance and Load Data
+		net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTING.register(s -> {
+			server = s;
+			// Load shops from disk now that we have a valid server context for registry access
+			ShopRegistry.getInstance().load();
+		});
 
 		// Load Configuration
 		savage.chestshops.config.ModConfig.load();
-
-		// Load shops from disk
-		ShopRegistry.getInstance().load();
 
 		// Register commands
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {

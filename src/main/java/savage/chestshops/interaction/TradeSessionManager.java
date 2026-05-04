@@ -37,6 +37,10 @@ public class TradeSessionManager {
         activeSessions.remove(playerId);
     }
 
+    public void cleanupExpiredSessions() {
+        activeSessions.entrySet().removeIf(entry -> entry.getValue().isExpired());
+    }
+
     public static class PendingTrade {
         private final ChestShop shop;
         private final long startTime;

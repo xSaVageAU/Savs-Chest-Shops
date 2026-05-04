@@ -122,47 +122,62 @@ public class ShopRegistry {
         }
     }
 
+    private final java.util.concurrent.ExecutorService ioExecutor = java.util.concurrent.Executors.newSingleThreadExecutor(Thread.ofVirtual().name("ChestShop-IO").factory());
+
     public void save() {
-        try (FileWriter writer = new FileWriter(storageFile)) {
-            JsonObject root = new JsonObject();
-            JsonArray array = new JsonArray();
+        JsonObject root = new JsonObject();
+        JsonArray array = new JsonArray();
 
-            for (ChestShop shop : shops.values()) {
-                JsonObject obj = new JsonObject();
-                obj.addProperty("worldId", shop.location().dimension().identifier().toString());
-                
-                JsonObject loc = new JsonObject();
-                loc.addProperty("x", shop.location().pos().getX());
-                loc.addProperty("y", shop.location().pos().getY());
-                loc.addProperty("z", shop.location().pos().getZ());
-                obj.add("chestLocation", loc);
-                
-                obj.addProperty("ownerId", shop.ownerId().toString());
-                obj.addProperty("ownerName", shop.ownerName());
-                obj.addProperty("type", shop.isAdmin() ? "ADMIN" : "PLAYER");
-                obj.addProperty("price", shop.price().toString());
-                obj.addProperty("buying", shop.isBuying());
-                obj.addProperty("stock", 0); // Logic handled at runtime
+        for (ChestShop shop : shops.values()) {
+            JsonObject obj = new JsonObject();
+            obj.addProperty("worldId", shop.location().dimension().identifier().toString());
+            
+            JsonObject loc = new JsonObject();
+            loc.addProperty("x", shop.location().pos().getX());
+            loc.addProperty("y", shop.location().pos().getY());
+            loc.addProperty("z", shop.location().pos().getZ());
+            obj.add("chestLocation", loc);
+            
+            obj.addProperty("ownerId", shop.ownerId().toString());
+            obj.addProperty("ownerName", shop.ownerName());
+            obj.addProperty("type", shop.isAdmin() ? "ADMIN" : "PLAYER");
+            obj.addProperty("price", shop.price().toString());
+            obj.addProperty("buying", shop.isBuying());
+            obj.addProperty("stock", 0); // Logic handled at runtime
 
-                if (!shop.item().isEmpty()) {
-                    try {
-                        net.minecraft.resources.RegistryOps<net.minecraft.nbt.Tag> ops = savage.chestshops.SavsChestShops.getServer().registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE);
-                        net.minecraft.nbt.CompoundTag nbt = (net.minecraft.nbt.CompoundTag) ItemStack.CODEC.encodeStart(ops, shop.item()).getOrThrow();
-                        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-                        net.minecraft.nbt.NbtIo.writeCompressed(nbt, baos);
-                        obj.addProperty("itemStackSnbt", java.util.Base64.getEncoder().encodeToString(baos.toByteArray()));
-                    } catch (Exception e) {
-                        SavsChestShops.LOGGER.error("Failed to encode item stack", e);
-                    }
+            if (!shop.item().isEmpty()) {
+                try {
+                    net.minecraft.resources.RegistryOps<net.minecraft.nbt.Tag> ops = savage.chestshops.SavsChestShops.getServer().registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE);
+                    net.minecraft.nbt.CompoundTag nbt = (net.minecraft.nbt.CompoundTag) ItemStack.CODEC.encodeStart(ops, shop.item()).getOrThrow();
+                    java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                    net.minecraft.nbt.NbtIo.writeCompressed(nbt, baos);
+                    obj.addProperty("itemStackSnbt", java.util.Base64.getEncoder().encodeToString(baos.toByteArray()));
+                } catch (Exception e) {
+                    SavsChestShops.LOGGER.error("Failed to encode item stack", e);
+                }
+            }
+            
+            array.add(obj);
+        }
+
+        root.add("shops", array);
+
+        ioExecutor.submit(() -> {
+            try {
+                File tempFile = new File(storageFile.getParentFile(), storageFile.getName() + ".tmp");
+                try (FileWriter writer = new FileWriter(tempFile)) {
+                    GSON.toJson(root, writer);
                 }
                 
-                array.add(obj);
+                if (storageFile.exists() && !storageFile.delete()) {
+                    SavsChestShops.LOGGER.warn("Failed to delete old shops file, rename might fail");
+                }
+                if (!tempFile.renameTo(storageFile)) {
+                    SavsChestShops.LOGGER.error("Failed to rename temp shops file");
+                }
+            } catch (IOException e) {
+                SavsChestShops.LOGGER.error("Failed to save shops asynchronously", e);
             }
-
-            root.add("shops", array);
-            GSON.toJson(root, writer);
-        } catch (IOException e) {
-            SavsChestShops.LOGGER.error("Failed to save shops", e);
-        }
+        });
     }
 }

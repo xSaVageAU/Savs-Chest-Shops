@@ -46,8 +46,9 @@ public class SavsChestShops implements ModInitializer {
 
 		// Automatic Sign Updates and Cleanup
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> {
-			// Dirty Shop Sign Updates (every 1 second)
+			// Dirty Shop Sign Updates and Session Cleanup (every 1 second)
 			if (server.getTickCount() % 20 == 0) {
+				savage.chestshops.interaction.TradeSessionManager.getInstance().cleanupExpiredSessions();
 				java.util.Set<net.minecraft.core.GlobalPos> dirty = ShopRegistry.getInstance().consumeDirtyShops();
 				if (!dirty.isEmpty()) {
 					for (net.minecraft.core.GlobalPos globalPos : dirty) {

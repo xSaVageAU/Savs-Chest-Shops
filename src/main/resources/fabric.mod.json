@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"id": "savs-chest-shops",
+	"version": "${version}",
+	"name": "Sav's Chest Shops",
+	"description": "A feature-rich chest shop system for Minecraft 26.1.x, powered by the Common Economy API.",
+	"authors": [
+		"xSaVageAU"
+	],
+	"contact": {
+		"homepage": "https://github.com/xSaVageAU/Savs-Chest-Shops",
+		"sources": "https://github.com/xSaVageAU/Savs-Chest-Shops"
+	},
+	"license": "MIT",
+	"icon": "assets/savs-chest-shops/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"savage.chestshops.SavsChestShops"
+		]
+	},
+	"mixins": [
+		"savs-chest-shops.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.19.2",
+		"minecraft": ">=26.1",
+		"java": ">=25",
+		"fabric-api": "*",
+		"common-economy-api": ">=2.0.0"
+	}
+}

@@ -3,7 +3,7 @@
 	"package": "savage.chestshops.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
-		"ExampleMixin"
+		"ChestBlockEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

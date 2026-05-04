@@ -31,6 +31,12 @@ public class InteractionHandler {
                 ChestShop shop = ShopRegistry.getInstance().getShop(chestPos, worldId);
 
                 if (shop != null) {
+                    // Check if player is the owner
+                    if (shop.getOwnerId().equals(serverPlayer.getUUID()) && !savage.chestshops.util.PermissionUtil.isAdmin(serverPlayer)) {
+                        serverPlayer.sendSystemMessage(Component.literal("§cYou cannot trade with your own shop!"));
+                        return InteractionResult.SUCCESS;
+                    }
+
                     // Initiate trade
                     TradeSessionManager.getInstance().startSession(serverPlayer.getUUID(), shop);
                     

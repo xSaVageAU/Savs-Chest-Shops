@@ -34,7 +34,7 @@ public class CreationHandler {
                     // If the sign is not yet formatted, format it
                     // (We'll just always allow re-formatting by the owner for now)
                     SignUtil.updateSign((ServerLevel) world, pos, shop);
-                    serverPlayer.sendSystemMessage(Component.literal("§aShop sign updated!"));
+                    serverPlayer.sendSystemMessage(Component.literal("Shop sign updated!").withStyle(net.minecraft.ChatFormatting.GREEN));
                     return InteractionResult.SUCCESS;
                 }
             }

@@ -43,12 +43,12 @@ public class TradeProcessor {
     private static void handlePlayerBuying(ServerPlayer player, ChestShop shop, ServerLevel world, int amount, BigInteger totalCost) {
         EconomyAccount playerAccount = EconomyWrapper.getPrimaryAccount(player);
         if (playerAccount == null) {
-            player.sendSystemMessage(Component.literal("§cAccount Error: Could not find your " + savage.chestshops.config.ModConfig.getConfig().economyProvider + " account!"));
+            player.sendSystemMessage(Component.literal("Account Error: Could not find your " + savage.chestshops.config.ModConfig.getConfig().economyProvider + " account!").withStyle(net.minecraft.ChatFormatting.RED));
             return;
         }
 
         if (!EconomyWrapper.canAfford(playerAccount, totalCost)) {
-            player.sendSystemMessage(Component.literal("§cYou cannot afford this! Total cost: " + totalCost));
+            player.sendSystemMessage(Component.literal("You cannot afford this! Total cost: " + totalCost).withStyle(net.minecraft.ChatFormatting.RED));
             return;
         }
 
@@ -57,7 +57,7 @@ public class TradeProcessor {
             if (!(be instanceof Container container)) return;
 
             if (InventoryHelper.countItems(container, shop.item()) < amount) {
-                player.sendSystemMessage(Component.literal("§cShop is out of stock!"));
+                player.sendSystemMessage(Component.literal("Shop is out of stock!").withStyle(net.minecraft.ChatFormatting.RED));
                 return;
             }
 
@@ -69,9 +69,9 @@ public class TradeProcessor {
                 var stack = shop.item().copy();
                 stack.setCount(amount);
                 InventoryHelper.addItemsToPlayer(player, stack);
-                player.sendSystemMessage(Component.literal("§aSuccessfully bought " + amount + "x items!"));
+                player.sendSystemMessage(Component.literal("Successfully bought " + amount + "x items!").withStyle(net.minecraft.ChatFormatting.GREEN));
             } else {
-                player.sendSystemMessage(Component.literal("§cTransaction failed!"));
+                player.sendSystemMessage(Component.literal("Transaction failed!").withStyle(net.minecraft.ChatFormatting.RED));
             }
         } else {
             // Admin Shop
@@ -79,20 +79,20 @@ public class TradeProcessor {
                 var stack = shop.item().copy();
                 stack.setCount(amount);
                 InventoryHelper.addItemsToPlayer(player, stack);
-                player.sendSystemMessage(Component.literal("§aSuccessfully bought " + amount + "x items from Admin Shop!"));
+                player.sendSystemMessage(Component.literal("Successfully bought " + amount + "x items from Admin Shop!").withStyle(net.minecraft.ChatFormatting.GREEN));
             }
         }
     }
 
     private static void handlePlayerSelling(ServerPlayer player, ChestShop shop, ServerLevel world, int amount, BigInteger totalPayout) {
         if (InventoryHelper.countItems(player.getInventory(), shop.item()) < amount) {
-            player.sendSystemMessage(Component.literal("§cYou don't have enough items to sell!"));
+            player.sendSystemMessage(Component.literal("You don't have enough items to sell!").withStyle(net.minecraft.ChatFormatting.RED));
             return;
         }
 
         EconomyAccount playerAccount = EconomyWrapper.getPrimaryAccount(player);
         if (playerAccount == null) {
-            player.sendSystemMessage(Component.literal("§cAccount Error: Could not find your " + savage.chestshops.config.ModConfig.getConfig().economyProvider + " account!"));
+            player.sendSystemMessage(Component.literal("Account Error: Could not find your " + savage.chestshops.config.ModConfig.getConfig().economyProvider + " account!").withStyle(net.minecraft.ChatFormatting.RED));
             return;
         }
 
@@ -102,7 +102,7 @@ public class TradeProcessor {
 
             EconomyAccount ownerAccount = EconomyWrapper.getPrimaryAccount(world.getServer(), shop.ownerId());
             if (!EconomyWrapper.canAfford(ownerAccount, totalPayout)) {
-                player.sendSystemMessage(Component.literal("§cShop owner cannot afford this!"));
+                player.sendSystemMessage(Component.literal("Shop owner cannot afford this!").withStyle(net.minecraft.ChatFormatting.RED));
                 return;
             }
 
@@ -115,18 +115,18 @@ public class TradeProcessor {
                     // Rollback if chest full
                     InventoryHelper.addItemsToPlayer(player, stack);
                     EconomyWrapper.transfer(playerAccount, ownerAccount, totalPayout);
-                    player.sendSystemMessage(Component.literal("§cShop chest is full!"));
+                    player.sendSystemMessage(Component.literal("Shop chest is full!").withStyle(net.minecraft.ChatFormatting.RED));
                 } else {
-                    player.sendSystemMessage(Component.literal("§aSuccessfully sold " + amount + "x items!"));
+                    player.sendSystemMessage(Component.literal("Successfully sold " + amount + "x items!").withStyle(net.minecraft.ChatFormatting.GREEN));
                 }
             } else {
-                player.sendSystemMessage(Component.literal("§cTransaction Failed: The bank blocked the transfer."));
+                player.sendSystemMessage(Component.literal("Transaction Failed: The bank blocked the transfer.").withStyle(net.minecraft.ChatFormatting.RED));
             }
         } else {
             // Admin Shop
             InventoryHelper.removeItems(player.getInventory(), shop.item(), amount);
             playerAccount.increaseBalance(totalPayout);
-            player.sendSystemMessage(Component.literal("§aSuccessfully sold " + amount + "x items to Admin Shop!"));
+            player.sendSystemMessage(Component.literal("Successfully sold " + amount + "x items to Admin Shop!").withStyle(net.minecraft.ChatFormatting.GREEN));
         }
     }
 }

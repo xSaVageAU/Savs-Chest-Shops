@@ -33,7 +33,7 @@ public class InteractionHandler {
                 if (shop != null) {
                     // Check if player is the owner (Disallow for regular shops, allow for Admin shops)
                     if (shop.ownerId().equals(serverPlayer.getUUID()) && !shop.isAdmin()) {
-                        serverPlayer.sendSystemMessage(Component.literal("§cYou cannot trade with your own shop!"));
+                        serverPlayer.sendSystemMessage(Component.literal("You cannot trade with your own shop!").withStyle(net.minecraft.ChatFormatting.RED));
                         return InteractionResult.SUCCESS;
                     }
 
@@ -41,8 +41,8 @@ public class InteractionHandler {
                     TradeSessionManager.getInstance().startSession(serverPlayer.getUUID(), shop);
                     
                     String action = shop.isBuying() ? "sell" : "buy";
-                    serverPlayer.sendSystemMessage(Component.literal("§eType the amount you want to " + action + " in chat."));
-                    serverPlayer.sendSystemMessage(Component.literal("§eType 'all' to " + action + " everything."));
+                    serverPlayer.sendSystemMessage(Component.literal("Type the amount you want to " + action + " in chat.").withStyle(net.minecraft.ChatFormatting.YELLOW));
+                    serverPlayer.sendSystemMessage(Component.literal("Type 'all' to " + action + " everything.").withStyle(net.minecraft.ChatFormatting.YELLOW));
                     
                     return InteractionResult.SUCCESS;
                 }

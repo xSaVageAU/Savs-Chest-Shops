@@ -56,7 +56,7 @@ public class ShopCommands {
             try {
                 priceDouble = Double.parseDouble(StringArgumentType.getString(context, "price"));
             } catch (NumberFormatException e) {
-                context.getSource().sendFailure(Component.literal("§cInvalid price format! Use a number like 10.00"));
+                context.getSource().sendFailure(Component.literal("Invalid price format! Use a number like 10.00").withStyle(net.minecraft.ChatFormatting.RED));
                 return 0;
             }
 
@@ -64,13 +64,13 @@ public class ShopCommands {
             ItemStack heldItem = player.getMainHandItem();
 
             if (heldItem.isEmpty()) {
-                context.getSource().sendFailure(Component.literal("§cHold an item in your hand first!"));
+                context.getSource().sendFailure(Component.literal("Hold an item in your hand first!").withStyle(net.minecraft.ChatFormatting.RED));
                 return 0;
             }
 
             HitResult hit = player.pick(5.0, 0.0f, false);
             if (hit.getType() != HitResult.Type.BLOCK) {
-                context.getSource().sendFailure(Component.literal("§cLook at a chest to create a shop!"));
+                context.getSource().sendFailure(Component.literal("Look at a chest to create a shop!").withStyle(net.minecraft.ChatFormatting.RED));
                 return 0;
             }
 
@@ -78,13 +78,13 @@ public class ShopCommands {
             BlockEntity be = player.level().getBlockEntity(pos);
 
             if (!(be instanceof Container)) {
-                context.getSource().sendFailure(Component.literal("§cYou must look at a chest or container!"));
+                context.getSource().sendFailure(Component.literal("You must look at a chest or container!").withStyle(net.minecraft.ChatFormatting.RED));
                 return 0;
             }
 
             net.minecraft.core.GlobalPos globalPos = net.minecraft.core.GlobalPos.of(player.level().dimension(), pos);
             if (ShopRegistry.getInstance().isShop(globalPos)) {
-                context.getSource().sendFailure(Component.literal("§cA shop already exists here!"));
+                context.getSource().sendFailure(Component.literal("A shop already exists here!").withStyle(net.minecraft.ChatFormatting.RED));
                 return 0;
             }
 
@@ -93,14 +93,14 @@ public class ShopCommands {
             
             if (savage.chestshops.util.SignUtil.placeSign(player.level(), pos, shop, player.getDirection())) {
                 String formattedPrice = savage.chestshops.economy.EconomyWrapper.format(price);
-                context.getSource().sendSuccess(() -> Component.literal("§aShop created for §e" + formattedPrice + "§a!"), true);
+                context.getSource().sendSuccess(() -> Component.literal("Shop created for ").withStyle(net.minecraft.ChatFormatting.GREEN).append(Component.literal(formattedPrice).withStyle(net.minecraft.ChatFormatting.YELLOW)).append(Component.literal("!").withStyle(net.minecraft.ChatFormatting.GREEN)), true);
             } else {
-                context.getSource().sendSuccess(() -> Component.literal("§eShop created, but failed to place sign. Place one manually."), true);
+                context.getSource().sendSuccess(() -> Component.literal("Shop created, but failed to place sign. Place one manually.").withStyle(net.minecraft.ChatFormatting.YELLOW), true);
             }
             return 1;
 
         } catch (Exception e) {
-            context.getSource().sendFailure(Component.literal("§cInvalid price format!"));
+            context.getSource().sendFailure(Component.literal("Invalid price format!").withStyle(net.minecraft.ChatFormatting.RED));
             return 0;
         }
     }
@@ -117,9 +117,9 @@ public class ShopCommands {
 
             if (shop != null) {
                 ShopRegistry.getInstance().removeShop(globalPos);
-                context.getSource().sendSuccess(() -> Component.literal("§aShop removed."), true);
+                context.getSource().sendSuccess(() -> Component.literal("Shop removed.").withStyle(net.minecraft.ChatFormatting.GREEN), true);
             } else {
-                context.getSource().sendFailure(Component.literal("§cNo shop found at this location."));
+                context.getSource().sendFailure(Component.literal("No shop found at this location.").withStyle(net.minecraft.ChatFormatting.RED));
             }
             return 1;
         } catch (Exception e) {

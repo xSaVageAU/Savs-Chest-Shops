@@ -35,7 +35,7 @@ public class ProtectionHandler {
                     boolean isAdmin = savage.chestshops.util.PermissionUtil.isAdmin(serverPlayer);
 
                     if (!isOwner && !isAdmin) {
-                        serverPlayer.sendSystemMessage(Component.literal("§cThis chest is protected by a shop! Only the owner can open it."));
+                        serverPlayer.sendSystemMessage(Component.literal("This chest is protected by a shop! Only the owner can open it.").withStyle(net.minecraft.ChatFormatting.RED));
                         return InteractionResult.FAIL;
                     }
                 }
@@ -55,12 +55,12 @@ public class ProtectionHandler {
                     boolean isAdmin = savage.chestshops.util.PermissionUtil.isAdmin(serverPlayer);
 
                     if (!isOwner && !isAdmin) {
-                        serverPlayer.sendSystemMessage(Component.literal("§cYou cannot break shop chests! Use /shop remove or break the sign first."));
+                        serverPlayer.sendSystemMessage(Component.literal("You cannot break shop chests! Use /shop remove or break the sign first.").withStyle(net.minecraft.ChatFormatting.RED));
                         return false;
                     }
                     // If owner breaks it, remove the shop
                     ShopRegistry.getInstance().removeShop(globalPos);
-                    serverPlayer.sendSystemMessage(Component.literal("§aShop removed."));
+                    serverPlayer.sendSystemMessage(Component.literal("Shop removed.").withStyle(net.minecraft.ChatFormatting.GREEN));
                 }
             }
             return true;

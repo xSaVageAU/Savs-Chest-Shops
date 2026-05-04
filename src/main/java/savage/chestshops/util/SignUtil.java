@@ -19,7 +19,7 @@ public class SignUtil {
     public static void updateSign(ServerLevel world, BlockPos signPos, ChestShop shop) {
         BlockEntity be = world.getBlockEntity(signPos);
         if (be instanceof SignBlockEntity sign) {
-            String type = shop.isBuying() ? "§1BUYING" : "§4SELLING";
+
             String itemName = shop.item().getHoverName().getString();
             if (itemName.length() > 15) {
                 itemName = itemName.substring(0, 12) + "...";
@@ -33,10 +33,10 @@ public class SignUtil {
                 stockText = (shop.isBuying() ? "Space: " : "Stock: ") + stock;
             }
 
-            Component line1 = shop.isAdmin() ? Component.literal("§4[Admin Shop]") : Component.literal("§1" + shop.ownerName());
+            Component line1 = shop.isAdmin() ? Component.literal("[Admin Shop]").withStyle(net.minecraft.ChatFormatting.DARK_RED) : Component.literal(shop.ownerName()).withStyle(net.minecraft.ChatFormatting.DARK_BLUE);
             Component line2 = Component.literal(itemName);
-            Component line3 = Component.literal("§0" + (shop.isBuying() ? "Buying" : "Selling") + ": " + savage.chestshops.economy.EconomyWrapper.format(shop.price()));
-            Component line4 = Component.literal("§0" + stockText);
+            Component line3 = Component.literal((shop.isBuying() ? "Buying" : "Selling") + ": " + savage.chestshops.economy.EconomyWrapper.format(shop.price())).withStyle(net.minecraft.ChatFormatting.BLACK);
+            Component line4 = Component.literal(stockText).withStyle(net.minecraft.ChatFormatting.BLACK);
 
             sign.setText(sign.getFrontText()
                 .setMessage(0, line1)

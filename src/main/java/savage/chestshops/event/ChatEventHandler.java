@@ -19,7 +19,7 @@ public class ChatEventHandler {
                 String content = message.signedContent().trim().toLowerCase();
 
                 if (content.equals("cancel")) {
-                    sender.sendSystemMessage(Component.literal("§eTrade cancelled."));
+                    sender.sendSystemMessage(Component.literal("Trade cancelled.").withStyle(net.minecraft.ChatFormatting.YELLOW));
                     TradeSessionManager.getInstance().endSession(sender.getUUID());
                     return false;
                 }
@@ -34,14 +34,14 @@ public class ChatEventHandler {
                         } else {
                             // Player buys from shop: how many can they afford / how many are in stock
                             if (shop.isAdmin()) {
-                                sender.sendSystemMessage(Component.literal("§cAdmin shops have infinite stock! Please type a specific amount to buy."));
+                                sender.sendSystemMessage(Component.literal("Admin shops have infinite stock! Please type a specific amount to buy.").withStyle(net.minecraft.ChatFormatting.RED));
                                 TradeSessionManager.getInstance().endSession(sender.getUUID());
                                 return false;
                             }
                             
                             var account = savage.chestshops.economy.EconomyWrapper.getPrimaryAccount(sender);
                             if (account == null) {
-                                sender.sendSystemMessage(Component.literal("§cYou don't have an economy account!"));
+                                sender.sendSystemMessage(Component.literal("You don't have an economy account!").withStyle(net.minecraft.ChatFormatting.RED));
                                 TradeSessionManager.getInstance().endSession(sender.getUUID());
                                 return false;
                             }
@@ -55,7 +55,7 @@ public class ChatEventHandler {
                     }
 
                     if (amount <= 0) {
-                        sender.sendSystemMessage(Component.literal("§cInvalid amount! Transaction cancelled."));
+                        sender.sendSystemMessage(Component.literal("Invalid amount! Transaction cancelled.").withStyle(net.minecraft.ChatFormatting.RED));
                         TradeSessionManager.getInstance().endSession(sender.getUUID());
                         return false;
                     }
@@ -65,7 +65,7 @@ public class ChatEventHandler {
                     return false; // Suppress chat message
 
                 } catch (NumberFormatException e) {
-                    sender.sendSystemMessage(Component.literal("§cInvalid amount! Transaction cancelled."));
+                    sender.sendSystemMessage(Component.literal("Invalid amount! Transaction cancelled.").withStyle(net.minecraft.ChatFormatting.RED));
                     TradeSessionManager.getInstance().endSession(sender.getUUID());
                     return false;
                 }

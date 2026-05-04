@@ -27,11 +27,11 @@ public class ProtectionHandler {
             BlockEntity be = world.getBlockEntity(pos);
 
             if (be instanceof ChestBlockEntity) {
-                String worldId = world.dimension().identifier().toString();
-                ChestShop shop = ShopRegistry.getInstance().getShop(pos, worldId);
+                net.minecraft.core.GlobalPos globalPos = net.minecraft.core.GlobalPos.of(world.dimension(), pos);
+                ChestShop shop = ShopRegistry.getInstance().getShop(globalPos);
 
                 if (shop != null) {
-                    boolean isOwner = shop.getOwnerId().equals(serverPlayer.getUUID());
+                    boolean isOwner = shop.ownerId().equals(serverPlayer.getUUID());
                     boolean isAdmin = savage.chestshops.util.PermissionUtil.isAdmin(serverPlayer);
 
                     if (!isOwner && !isAdmin) {
@@ -47,11 +47,11 @@ public class ProtectionHandler {
         PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {
             if (world.isClientSide() || !(player instanceof ServerPlayer serverPlayer)) return true;
 
-            String worldId = world.dimension().identifier().toString();
-            if (ShopRegistry.getInstance().isShop(pos, worldId)) {
-                ChestShop shop = ShopRegistry.getInstance().getShop(pos, worldId);
+            net.minecraft.core.GlobalPos globalPos = net.minecraft.core.GlobalPos.of(world.dimension(), pos);
+            if (ShopRegistry.getInstance().isShop(globalPos)) {
+                ChestShop shop = ShopRegistry.getInstance().getShop(globalPos);
                 if (shop != null) {
-                    boolean isOwner = shop.getOwnerId().equals(serverPlayer.getUUID());
+                    boolean isOwner = shop.ownerId().equals(serverPlayer.getUUID());
                     boolean isAdmin = savage.chestshops.util.PermissionUtil.isAdmin(serverPlayer);
 
                     if (!isOwner && !isAdmin) {
@@ -59,7 +59,7 @@ public class ProtectionHandler {
                         return false;
                     }
                     // If owner breaks it, remove the shop
-                    ShopRegistry.getInstance().removeShop(pos, worldId);
+                    ShopRegistry.getInstance().removeShop(globalPos);
                     serverPlayer.sendSystemMessage(Component.literal("§aShop removed."));
                 }
             }

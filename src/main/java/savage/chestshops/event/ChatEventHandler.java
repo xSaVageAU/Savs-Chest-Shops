@@ -30,7 +30,7 @@ public class ChatEventHandler {
                         ChestShop shop = session.getShop();
                         if (shop.isBuying()) {
                             // Player sells to shop: count how many items player has
-                            amount = savage.chestshops.util.InventoryHelper.countItems(sender.getInventory(), shop.getItem());
+                            amount = savage.chestshops.util.InventoryHelper.countItems(sender.getInventory(), shop.item());
                         } else {
                             // Player buys from shop: how many can they afford / how many are in stock
                             if (shop.isAdmin()) {
@@ -46,7 +46,7 @@ public class ChatEventHandler {
                                 return false;
                             }
 
-                            int canAfford = account.balance().divide(shop.getPrice()).intValue();
+                            int canAfford = account.balance().divide(shop.price()).intValue();
                             int shopHas = savage.chestshops.util.ShopStockCalculator.calculateStock((net.minecraft.server.level.ServerLevel)sender.level(), shop);
                             amount = Math.min(canAfford, shopHas);
                         }

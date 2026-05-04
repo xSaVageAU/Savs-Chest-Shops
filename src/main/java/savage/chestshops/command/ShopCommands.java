@@ -82,13 +82,13 @@ public class ShopCommands {
                 return 0;
             }
 
-            String worldId = player.level().dimension().identifier().toString();
-            if (ShopRegistry.getInstance().isShop(pos, worldId)) {
+            net.minecraft.core.GlobalPos globalPos = net.minecraft.core.GlobalPos.of(player.level().dimension(), pos);
+            if (ShopRegistry.getInstance().isShop(globalPos)) {
                 context.getSource().sendFailure(Component.literal("§cA shop already exists here!"));
                 return 0;
             }
 
-            ChestShop shop = new ChestShop(pos, worldId, player.getUUID(), player.getGameProfile().name(), heldItem.copy(), price, isBuying, isAdmin);
+            ChestShop shop = new ChestShop(globalPos, player.getUUID(), player.getGameProfile().name(), heldItem.copy(), price, isBuying, isAdmin);
             ShopRegistry.getInstance().addShop(shop);
             
             if (savage.chestshops.util.SignUtil.placeSign(player.level(), pos, shop, player.getDirection())) {
@@ -112,11 +112,11 @@ public class ShopCommands {
             if (hit.getType() != HitResult.Type.BLOCK) return 0;
 
             BlockPos pos = ((BlockHitResult) hit).getBlockPos();
-                        String worldId = player.level().dimension().identifier().toString();
-            ChestShop shop = ShopRegistry.getInstance().getShop(pos, worldId);
+            net.minecraft.core.GlobalPos globalPos = net.minecraft.core.GlobalPos.of(player.level().dimension(), pos);
+            ChestShop shop = ShopRegistry.getInstance().getShop(globalPos);
 
             if (shop != null) {
-                ShopRegistry.getInstance().removeShop(pos, worldId);
+                ShopRegistry.getInstance().removeShop(globalPos);
                 context.getSource().sendSuccess(() -> Component.literal("§aShop removed."), true);
             } else {
                 context.getSource().sendFailure(Component.literal("§cNo shop found at this location."));

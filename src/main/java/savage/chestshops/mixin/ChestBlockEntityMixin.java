@@ -16,9 +16,9 @@ public abstract class ChestBlockEntityMixin {
         BlockEntity self = (BlockEntity) (Object) this;
         if (self instanceof ChestBlockEntity && self.getLevel() != null && !self.getLevel().isClientSide()) {
             BlockPos pos = self.getBlockPos();
-            String worldId = self.getLevel().dimension().identifier().toString();
-            if (savage.chestshops.registry.ShopRegistry.getInstance().isShop(pos, worldId)) {
-                savage.chestshops.registry.ShopRegistry.getInstance().markDirty(pos, worldId);
+            net.minecraft.core.GlobalPos globalPos = net.minecraft.core.GlobalPos.of(self.getLevel().dimension(), pos);
+            if (savage.chestshops.registry.ShopRegistry.getInstance().isShop(globalPos)) {
+                savage.chestshops.registry.ShopRegistry.getInstance().markDirty(globalPos);
             }
         }
     }

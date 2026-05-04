@@ -23,7 +23,7 @@ public class TradeProcessor {
         if (amount <= 0) return;
 
         ServerLevel world = (ServerLevel) player.level();
-        BigInteger totalPrice = shop.getPrice().multiply(BigInteger.valueOf(amount));
+        BigInteger totalPrice = shop.price().multiply(BigInteger.valueOf(amount));
         
         if (shop.isBuying()) {
             // Shop buys from Player (Player sells)
@@ -34,7 +34,7 @@ public class TradeProcessor {
         }
 
         // Update sign
-        BlockPos signPos = SignUtil.findSignForChest(world, shop.getPos());
+        BlockPos signPos = SignUtil.findSignForChest(world, shop.location().pos());
         if (signPos != null) {
             SignUtil.updateSign(world, signPos, shop);
         }
@@ -53,20 +53,20 @@ public class TradeProcessor {
         }
 
         if (!shop.isAdmin()) {
-            BlockEntity be = world.getBlockEntity(shop.getPos());
+            BlockEntity be = world.getBlockEntity(shop.location().pos());
             if (!(be instanceof Container container)) return;
 
-            if (InventoryHelper.countItems(container, shop.getItem()) < amount) {
+            if (InventoryHelper.countItems(container, shop.item()) < amount) {
                 player.sendSystemMessage(Component.literal("§cShop is out of stock!"));
                 return;
             }
 
             // Transfer money to owner
-            EconomyAccount ownerAccount = EconomyWrapper.getPrimaryAccount(world.getServer(), shop.getOwnerId());
+            EconomyAccount ownerAccount = EconomyWrapper.getPrimaryAccount(world.getServer(), shop.ownerId());
             if (EconomyWrapper.transfer(playerAccount, ownerAccount, totalCost)) {
                 // Move items
-                InventoryHelper.removeItems(container, shop.getItem(), amount);
-                var stack = shop.getItem().copy();
+                InventoryHelper.removeItems(container, shop.item(), amount);
+                var stack = shop.item().copy();
                 stack.setCount(amount);
                 InventoryHelper.addItemsToPlayer(player, stack);
                 player.sendSystemMessage(Component.literal("§aSuccessfully bought " + amount + "x items!"));
@@ -76,7 +76,7 @@ public class TradeProcessor {
         } else {
             // Admin Shop
             if (playerAccount.decreaseBalance(totalCost).isSuccessful()) {
-                var stack = shop.getItem().copy();
+                var stack = shop.item().copy();
                 stack.setCount(amount);
                 InventoryHelper.addItemsToPlayer(player, stack);
                 player.sendSystemMessage(Component.literal("§aSuccessfully bought " + amount + "x items from Admin Shop!"));
@@ -85,7 +85,7 @@ public class TradeProcessor {
     }
 
     private static void handlePlayerSelling(ServerPlayer player, ChestShop shop, ServerLevel world, int amount, BigInteger totalPayout) {
-        if (InventoryHelper.countItems(player.getInventory(), shop.getItem()) < amount) {
+        if (InventoryHelper.countItems(player.getInventory(), shop.item()) < amount) {
             player.sendSystemMessage(Component.literal("§cYou don't have enough items to sell!"));
             return;
         }
@@ -97,10 +97,10 @@ public class TradeProcessor {
         }
 
         if (!shop.isAdmin()) {
-            BlockEntity be = world.getBlockEntity(shop.getPos());
+            BlockEntity be = world.getBlockEntity(shop.location().pos());
             if (!(be instanceof Container container)) return;
 
-            EconomyAccount ownerAccount = EconomyWrapper.getPrimaryAccount(world.getServer(), shop.getOwnerId());
+            EconomyAccount ownerAccount = EconomyWrapper.getPrimaryAccount(world.getServer(), shop.ownerId());
             if (!EconomyWrapper.canAfford(ownerAccount, totalPayout)) {
                 player.sendSystemMessage(Component.literal("§cShop owner cannot afford this!"));
                 return;
@@ -108,8 +108,8 @@ public class TradeProcessor {
 
             if (EconomyWrapper.transfer(ownerAccount, playerAccount, totalPayout)) {
                 // Move items
-                InventoryHelper.removeItems(player.getInventory(), shop.getItem(), amount);
-                var stack = shop.getItem().copy();
+                InventoryHelper.removeItems(player.getInventory(), shop.item(), amount);
+                var stack = shop.item().copy();
                 stack.setCount(amount);
                 if (!InventoryHelper.addItems(container, stack)) {
                     // Rollback if chest full
@@ -124,7 +124,7 @@ public class TradeProcessor {
             }
         } else {
             // Admin Shop
-            InventoryHelper.removeItems(player.getInventory(), shop.getItem(), amount);
+            InventoryHelper.removeItems(player.getInventory(), shop.item(), amount);
             playerAccount.increaseBalance(totalPayout);
             player.sendSystemMessage(Component.literal("§aSuccessfully sold " + amount + "x items to Admin Shop!"));
         }

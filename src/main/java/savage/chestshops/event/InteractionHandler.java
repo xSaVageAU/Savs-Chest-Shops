@@ -27,12 +27,12 @@ public class InteractionHandler {
             // Check if it's a sign attached to a shop
             if (world.getBlockState(pos).getBlock() instanceof WallSignBlock || world.getBlockState(pos).getBlock() instanceof net.minecraft.world.level.block.SignBlock) {
                 BlockPos chestPos = SignUtil.getAttachedChest(world, pos);
-                String worldId = world.dimension().identifier().toString();
-                ChestShop shop = ShopRegistry.getInstance().getShop(chestPos, worldId);
+                net.minecraft.core.GlobalPos globalPos = net.minecraft.core.GlobalPos.of(world.dimension(), chestPos);
+                ChestShop shop = ShopRegistry.getInstance().getShop(globalPos);
 
                 if (shop != null) {
                     // Check if player is the owner (Disallow for regular shops, allow for Admin shops)
-                    if (shop.getOwnerId().equals(serverPlayer.getUUID()) && !shop.isAdmin()) {
+                    if (shop.ownerId().equals(serverPlayer.getUUID()) && !shop.isAdmin()) {
                         serverPlayer.sendSystemMessage(Component.literal("§cYou cannot trade with your own shop!"));
                         return InteractionResult.SUCCESS;
                     }

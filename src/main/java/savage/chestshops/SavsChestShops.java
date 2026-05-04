@@ -48,25 +48,16 @@ public class SavsChestShops implements ModInitializer {
 		net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(server -> {
 			// Dirty Shop Sign Updates (every 1 second)
 			if (server.getTickCount() % 20 == 0) {
-				java.util.Set<String> dirty = ShopRegistry.getInstance().consumeDirtyShops();
+				java.util.Set<net.minecraft.core.GlobalPos> dirty = ShopRegistry.getInstance().consumeDirtyShops();
 				if (!dirty.isEmpty()) {
-					for (net.minecraft.server.level.ServerLevel world : server.getAllLevels()) {
-						String worldId = world.dimension().identifier().toString();
-						for (String shopId : dirty) {
-							// Check if this shop belongs to this world
-							if (shopId.startsWith(worldId + ":")) {
-								String[] parts = shopId.substring(worldId.length() + 1).split(",");
-								net.minecraft.core.BlockPos pos = new net.minecraft.core.BlockPos(
-									Integer.parseInt(parts[0]),
-									Integer.parseInt(parts[1]),
-									Integer.parseInt(parts[2])
-								);
-								savage.chestshops.model.ChestShop shop = ShopRegistry.getInstance().getShop(pos, worldId);
-								if (shop != null) {
-									net.minecraft.core.BlockPos signPos = savage.chestshops.util.SignUtil.findSignForChest(world, pos);
-									if (signPos != null) {
-										savage.chestshops.util.SignUtil.updateSign(world, signPos, shop);
-									}
+					for (net.minecraft.core.GlobalPos globalPos : dirty) {
+						net.minecraft.server.level.ServerLevel world = server.getLevel(globalPos.dimension());
+						if (world != null) {
+							savage.chestshops.model.ChestShop shop = ShopRegistry.getInstance().getShop(globalPos);
+							if (shop != null) {
+								net.minecraft.core.BlockPos signPos = savage.chestshops.util.SignUtil.findSignForChest(world, globalPos.pos());
+								if (signPos != null) {
+									savage.chestshops.util.SignUtil.updateSign(world, signPos, shop);
 								}
 							}
 						}
@@ -78,19 +69,17 @@ public class SavsChestShops implements ModInitializer {
 
 			// Orphan Shop Cleanup (every 5 seconds)
 			if (server.getTickCount() % 100 == 0) {
-				java.util.List<savage.chestshops.model.ChestShop> toRemove = new java.util.ArrayList<>();
-				for (net.minecraft.server.level.ServerLevel world : server.getAllLevels()) {
-					String worldId = world.dimension().identifier().toString();
-					for (savage.chestshops.model.ChestShop shop : ShopRegistry.getInstance().getAllShops()) {
-						if (worldId.equals(shop.getWorldId())) {
-							if (!(world.getBlockState(shop.getPos()).getBlock() instanceof net.minecraft.world.level.block.ChestBlock)) {
-								toRemove.add(shop);
-							}
+				java.util.List<net.minecraft.core.GlobalPos> toRemove = new java.util.ArrayList<>();
+				for (savage.chestshops.model.ChestShop shop : ShopRegistry.getInstance().getAllShops()) {
+					net.minecraft.server.level.ServerLevel world = server.getLevel(shop.location().dimension());
+					if (world != null) {
+						if (!(world.getBlockState(shop.location().pos()).getBlock() instanceof net.minecraft.world.level.block.ChestBlock)) {
+							toRemove.add(shop.location());
 						}
 					}
 				}
-				for (savage.chestshops.model.ChestShop shop : toRemove) {
-					ShopRegistry.getInstance().removeShop(shop.getPos(), shop.getWorldId());
+				for (net.minecraft.core.GlobalPos pos : toRemove) {
+					ShopRegistry.getInstance().removeShop(pos);
 				}
 			}
 		});

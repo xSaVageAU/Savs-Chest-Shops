@@ -3,11 +3,12 @@ package savage.chestshops.registry;
 import com.google.gson.*;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import savage.chestshops.SavsChestShops;
 import savage.chestshops.model.ChestShop;
 
@@ -25,8 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ShopRegistry {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private final Map<String, ChestShop> shops = new ConcurrentHashMap<>();
-    private final java.util.Set<String> dirtyShops = ConcurrentHashMap.newKeySet();
+    private final Map<GlobalPos, ChestShop> shops = new ConcurrentHashMap<>();
+    private final java.util.Set<GlobalPos> dirtyShops = ConcurrentHashMap.newKeySet();
     private final File storageFile;
 
     private static class Holder {
@@ -42,29 +43,29 @@ public class ShopRegistry {
     }
 
     public void addShop(ChestShop shop) {
-        shops.put(shop.getShopId(), shop);
+        shops.put(shop.location(), shop);
         save();
     }
 
-    public void removeShop(BlockPos pos, String worldId) {
-        shops.remove(worldId + ":" + pos.getX() + "," + pos.getY() + "," + pos.getZ());
+    public void removeShop(GlobalPos pos) {
+        shops.remove(pos);
         save();
     }
 
-    public ChestShop getShop(BlockPos pos, String worldId) {
-        return shops.get(worldId + ":" + pos.getX() + "," + pos.getY() + "," + pos.getZ());
+    public ChestShop getShop(GlobalPos pos) {
+        return shops.get(pos);
     }
 
-    public boolean isShop(BlockPos pos, String worldId) {
-        return shops.containsKey(worldId + ":" + pos.getX() + "," + pos.getY() + "," + pos.getZ());
+    public boolean isShop(GlobalPos pos) {
+        return shops.containsKey(pos);
     }
 
-    public void markDirty(BlockPos pos, String worldId) {
-        dirtyShops.add(worldId + ":" + pos.getX() + "," + pos.getY() + "," + pos.getZ());
+    public void markDirty(GlobalPos pos) {
+        dirtyShops.add(pos);
     }
 
-    public java.util.Set<String> consumeDirtyShops() {
-        java.util.Set<String> consumed = new java.util.HashSet<>(dirtyShops);
+    public java.util.Set<GlobalPos> consumeDirtyShops() {
+        java.util.Set<GlobalPos> consumed = new java.util.HashSet<>(dirtyShops);
         dirtyShops.clear();
         return consumed;
     }
@@ -90,6 +91,9 @@ public class ShopRegistry {
                     BlockPos pos = new BlockPos(loc.get("x").getAsInt(), loc.get("y").getAsInt(), loc.get("z").getAsInt());
                     
                     String worldId = obj.get("worldId").getAsString();
+                    ResourceKey<Level> dimension = ResourceKey.create(Registries.DIMENSION, Identifier.tryParse(worldId));
+                    GlobalPos globalPos = GlobalPos.of(dimension, pos);
+                    
                     UUID ownerId = UUID.fromString(obj.get("ownerId").getAsString());
                     String ownerName = obj.get("ownerName").getAsString();
                     
@@ -107,8 +111,8 @@ public class ShopRegistry {
                         itemStack = ItemStack.CODEC.parse(ops, nbt).getOrThrow();
                     }
 
-                    ChestShop shop = new ChestShop(pos, worldId, ownerId, ownerName, itemStack, price, isBuying, isAdmin);
-                    shops.put(shop.getShopId(), shop);
+                    ChestShop shop = new ChestShop(globalPos, ownerId, ownerName, itemStack, price, isBuying, isAdmin);
+                    shops.put(shop.location(), shop);
                 } catch (Exception e) {
                     SavsChestShops.LOGGER.error("Failed to load a shop entry", e);
                 }
@@ -125,26 +129,25 @@ public class ShopRegistry {
 
             for (ChestShop shop : shops.values()) {
                 JsonObject obj = new JsonObject();
-                obj.addProperty("shopId", shop.getShopId());
-                obj.addProperty("worldId", shop.getWorldId());
+                obj.addProperty("worldId", shop.location().dimension().identifier().toString());
                 
                 JsonObject loc = new JsonObject();
-                loc.addProperty("x", shop.getPos().getX());
-                loc.addProperty("y", shop.getPos().getY());
-                loc.addProperty("z", shop.getPos().getZ());
+                loc.addProperty("x", shop.location().pos().getX());
+                loc.addProperty("y", shop.location().pos().getY());
+                loc.addProperty("z", shop.location().pos().getZ());
                 obj.add("chestLocation", loc);
                 
-                obj.addProperty("ownerId", shop.getOwnerId().toString());
-                obj.addProperty("ownerName", shop.getOwnerName());
+                obj.addProperty("ownerId", shop.ownerId().toString());
+                obj.addProperty("ownerName", shop.ownerName());
                 obj.addProperty("type", shop.isAdmin() ? "ADMIN" : "PLAYER");
-                obj.addProperty("price", shop.getPrice().toString());
+                obj.addProperty("price", shop.price().toString());
                 obj.addProperty("buying", shop.isBuying());
                 obj.addProperty("stock", 0); // Logic handled at runtime
 
-                if (!shop.getItem().isEmpty()) {
+                if (!shop.item().isEmpty()) {
                     try {
                         net.minecraft.resources.RegistryOps<net.minecraft.nbt.Tag> ops = savage.chestshops.SavsChestShops.getServer().registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE);
-                        net.minecraft.nbt.CompoundTag nbt = (net.minecraft.nbt.CompoundTag) ItemStack.CODEC.encodeStart(ops, shop.getItem()).getOrThrow();
+                        net.minecraft.nbt.CompoundTag nbt = (net.minecraft.nbt.CompoundTag) ItemStack.CODEC.encodeStart(ops, shop.item()).getOrThrow();
                         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
                         net.minecraft.nbt.NbtIo.writeCompressed(nbt, baos);
                         obj.addProperty("itemStackSnbt", java.util.Base64.getEncoder().encodeToString(baos.toByteArray()));

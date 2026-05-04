@@ -27,10 +27,10 @@ public class CreationHandler {
             // If right-clicking a sign
             if (world.getBlockState(pos).getBlock() instanceof WallSignBlock || world.getBlockState(pos).getBlock() instanceof net.minecraft.world.level.block.SignBlock) {
                 BlockPos chestPos = SignUtil.getAttachedChest(world, pos);
-                String worldId = world.dimension().identifier().toString();
-                ChestShop shop = ShopRegistry.getInstance().getShop(chestPos, worldId);
+                net.minecraft.core.GlobalPos globalPos = net.minecraft.core.GlobalPos.of(world.dimension(), chestPos);
+                ChestShop shop = ShopRegistry.getInstance().getShop(globalPos);
 
-                if (shop != null && shop.getOwnerId().equals(serverPlayer.getUUID())) {
+                if (shop != null && shop.ownerId().equals(serverPlayer.getUUID())) {
                     // If the sign is not yet formatted, format it
                     // (We'll just always allow re-formatting by the owner for now)
                     SignUtil.updateSign((ServerLevel) world, pos, shop);

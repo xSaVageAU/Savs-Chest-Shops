@@ -10,15 +10,15 @@ public class ShopStockCalculator {
     public static int calculateStock(ServerLevel world, ChestShop shop) {
         if (shop.isAdmin()) return -1;
 
-        BlockEntity be = world.getBlockEntity(shop.getPos());
+        BlockEntity be = world.getBlockEntity(shop.location().pos());
         if (!(be instanceof Container container)) return 0;
 
         if (shop.isBuying()) {
             // Shop buys from player, so we calculate space
-            return InventoryHelper.calculateSpace(container, shop.getItem());
+            return InventoryHelper.calculateSpace(container, shop.item());
         } else {
             // Shop sells to player, so we calculate stock
-            return InventoryHelper.countItems(container, shop.getItem());
+            return InventoryHelper.countItems(container, shop.item());
         }
     }
 }
